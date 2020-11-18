@@ -138,6 +138,7 @@
     "goal:invalidtype": "Please make sure you specify a valid goal type (`daily`, `weekly`, `monthly` or `yearly`). E.g. `goal set weekly 500`.",
     "goal:invalidoption": "Not sure what you want to do with your goal... (Note: to check a goal, the command has changed to `goal check <type>`, e.g. `goal check daily`",
     "goal:yourgoal": "Your {} goal is to write **{}** words.",
+    "goal:updategoal": "You updated your goal with words.",
 
     "help:about": "Info and Stats about the bot.",
     "help:ask": "Asks you questions about your story.",
