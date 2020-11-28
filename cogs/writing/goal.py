@@ -194,6 +194,19 @@ class Goal(commands.Cog, CommandWrapper):
         else:
             return await context.send(user.get_mention() + ', ' + lib.get_string('goal:nogoal', user.get_guild()).format(type_string, type))
 
+    async def run_update(self, context, type, amount):
+        user = User(context.message.author.id, context.guild.id, context)
+        type_string = lib.get_string('goal:' + type, user.get_guild())
+        
+        # Check if we can convert the amount to an int
+        amount = lib.is_number(amount)
+        if not amount:
+            return await context.send(user.get_mention() + ', ' + lib.get_string('err:validamount', user.get_guild()))
+
+        # Set the user's goal
+        user.add_to_goal(type, amount)
+    
+        return await context.send(user.get_mention() + ', ' + lib.get_string('goal:updategoal', user.get_guild()).format(type, amount))
 
 def setup(bot):
     bot.add_cog(Goal(bot))
