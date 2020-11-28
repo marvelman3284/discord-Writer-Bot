@@ -20,8 +20,13 @@ class Help(commands.Cog, CommandWrapper):
 
         command = command.lower()
 
+        config = lib.get('./settings.json')
+
         if command == "help":
-            help_embed = discord.Embed(title="Help with Writer Bot", description="For more help with a command run `help [command]`", color=discord.Color.blurple())
+
+            url = config.src + '/wiki/Commands' if config.src != "" else None
+
+            help_embed = discord.Embed(title="Help with Writer Bot", description="For more help with a command run `help [command]`", color=discord.Color.blurple(), url=url)
             help_embed.add_field(name='`about`', value=lib.get_string('help:about', user.get_guild()), inline=True)
             help_embed.add_field(name='`ask`', value=lib.get_string('help:ask', user.get_guild()), inline=True)
             help_embed.add_field(name='`challenge`', value=lib.get_string('help:challenge', user.get_guild()), inline=True)
@@ -133,6 +138,8 @@ class Help(commands.Cog, CommandWrapper):
             goal_embed.add_field(name='`goal set weekly 500`', value=lib.get_string('help:goalSetSub', user.get_guild()), inline=True)
             goal_embed.add_field(name='`goal cancel monthly`', value=lib.get_string('help:goalCancelSub', user.get_guild()), inline=True)
             goal_embed.add_field(name='`goal time yearly`', value=lib.get_string('help:goalTimeSub', user.get_guild()), inline=True)
+            goal_embed.add_field(name='`goal history monthly`', value=lib.get_string('help:goalHistorySub', user.get_guild()), inline=True)
+            goal_embed.add_field(name='`goal update yearly 12350`', value=lib.get_string('help:goalUpdateSub', user.get_guild()), inline=True)
 
             return await context.send(embed=goal_embed)
 
@@ -209,6 +216,7 @@ class Help(commands.Cog, CommandWrapper):
             sprint_embed.add_field(name='`sprint join 100`', value=lib.get_string('help:sprintJoin100Sub', user.get_guild()), inline=True)
             sprint_embed.add_field(name='`sprint join 100 sword`', value=lib.get_string('help:sprintJoin100SwordSub', user.get_guild()), inline=False)
             sprint_embed.add_field(name='`sprint join edit`', value=lib.get_string('help:sprintJoinEdit', user.get_guild()), inline=True)
+            sprint_embed.add_field(name='`sprint join same`', value=lib.get_string('help:sprintJoinSame', user.get_guild()), inline=True)
             sprint_embed.add_field(name='`sprint leave`', value=lib.get_string('help:sprintLeaveSub', user.get_guild()), inline=True)
             sprint_embed.add_field(name='`sprint project sword`', value=lib.get_string('help:sprintProjectSwordSub', user.get_guild()), inline=True)
             sprint_embed.add_field(name='`sprint time`', value=lib.get_string('help:sprintTimeSub', user.get_guild()), inline=True)

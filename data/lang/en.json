@@ -97,7 +97,7 @@
     "setting:err:lang": "There is no language pack for that language. Please choose from the available packs: {}",
 
     "mysetting:updated": "updated setting `{}` to: `{}`",
-    "mysetting:timezone:help": "Your timezone setting must be a valid TZ Database Name. Please see the following wikipedia page and choose your timezone from the TZ Database Name column: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones (It should look something like `Europe/London`)",
+    "mysetting:timezone:help": "Your timezone setting must be a valid TZ Database Name. Please see the following page and choose your timezone: https://kevinnovak.github.io/Time-Zone-Picker/ (It should look something like `Europe/London`)",
     "mysetting:argument:setting": "What setting do you want to update?",
     "mysetting:argument:value": "What value do you want to set for this setting?",
 
@@ -138,6 +138,8 @@
     "goal:invalidtype": "Please make sure you specify a valid goal type (`daily`, `weekly`, `monthly` or `yearly`). E.g. `goal set weekly 500`.",
     "goal:invalidoption": "Not sure what you want to do with your goal... (Note: to check a goal, the command has changed to `goal check <type>`, e.g. `goal check daily`",
     "goal:yourgoal": "Your {} goal is to write **{}** words.",
+    "goal:history": "Your recent {} goal history",
+    "goal:updated": "Manually updated {} goal to: **{}**.",
 
     "help:about": "Info and Stats about the bot.",
     "help:ask": "Asks you questions about your story.",
@@ -145,7 +147,7 @@
     "help:8ball": "Ask a question to an 8ball.",
     "help:event": "Create server events.",
     "help:flip": "Flip a coin.",
-    "help:goal": "Set a daily goal.",
+    "help:goal": "Set/Check a daily goal.",
     "help:mysetting": "Update/change user settings.",
     "help:ping": "Latency between bot and client.",
     "help:profile": "View your writer bot profile.",
@@ -218,10 +220,12 @@
     "help:goalSetSub": "Sets your weekly goal to 500 words. (500 can be changed to your desired amount of words.)",
     "help:goalCancelSub": "Cancels your monthly goal.",
     "help:goalTimeSub": "Checks how long until your yearly goal resets",
+    "help:goalHistorySub": "Displays your monthly goal history",
+    "help:goalUpdateSub": "Manually update the value of your yearly goal to 12350, without affecting anything else.",
 
     "help:mysettingTzSub": "Sets your timezone. (America/New_York can be changed to your desired timezone.)",
-    "help:mysettingUrlSub": "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones",
-    "help:mysetting:footer": "For the timezone setting, make sure the value you specify is a valid TZ Database Name from this wikipedia page: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones",
+    "help:mysettingUrlSub": "https://kevinnovak.github.io/Time-Zone-Picker/",
+    "help:mysetting:footer": "For the timezone setting, make sure the value you specify is a valid TZ name from this page: https://kevinnovak.github.io/Time-Zone-Picker/",
     
     "help:pingSub": "Displays the amount of latency between the bot and the client.",
 
@@ -268,6 +272,7 @@
     "help:sprintStatusSub": "Shows your current word count for the current sprint.",
     "help:sprintFooter": " `sprint cancel` can only be run by the person who started the sprint or someone with the MANAGE_MESSAGES permission.",
     "help:sprintJoinEdit": "Joins the current sprint but as a user who will not submit a word count. For example, if you are editing, rather than writing.",
+    "help:sprintJoinSame": "Joins the current sprint using the project and final word count from your most recent sprint, as your project and starting word count for this one.",
 
     "help:wroteSub": "Adds 500 to your total words written statistic (500 can be changed for your desired words written.)",
     "help:wroteprojectSub": "Adds 500 to your project with the shortname 'sword' (500 can be changed for your desired words written.)",
