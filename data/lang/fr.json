@@ -219,7 +219,7 @@
     "help:goalTimeSub": "Vérifie combien de temps il reste avant que votre objectif (ici, annuel) se réinitialise.", "help:goalFooter":"`weekly`: hebdomadaire, `daily`: quotidien, `monthly`: mensuel, `yearly`: annuel",
 
     "help:mysettingTzSub" : "Fixez votre fuseau horaire. (America/New_York peut être modifié selon votre fuseau horaire)",
-    "help:mysettingUrlSub" : "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones",
+    "help:mysettingUrlSub" : "https://kevinnovak.github.io/Time-Zone-Picker/",
     "help:mysetting:footer" : "Pour le réglage du fuseau horaire, assurez-vous que la valeur que vous spécifiez est un nom de fuseau valide issu de cette page : https://kevinnovak.github.io/Time-Zone-Picker/",
 
     "help:pingSub":"Affiche le temps de latence entre le bot et le client.",
