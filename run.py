@@ -2,7 +2,6 @@
 import discord, json, lib
 from bot import WriterBot
 from discord.ext import commands
-from pprint import pprint
 
 # Load the settings for initial setup
 config = lib.get('./settings.json')
