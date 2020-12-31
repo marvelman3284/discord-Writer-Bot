@@ -113,13 +113,13 @@ class SprintCommand(commands.Cog, CommandWrapper):
                 return await context.send(
                     user.get_mention()
                     + ", "
-                    + lib.get_string("sprint:err:for:unknown", user.get_guild())
+                    + lib.get_string("sprint:err:in:unknown", user.get_guild())
                 )
 
             # Get the length they want before starting the sprint.
             # If they left off the last argument and just said `sprint for 20` then assume they mean now.
             if opt2 is None:
-                length = 20
+                length = self.DEFAULT_LENGTH
             elif opt2.lower() == "for":
                length = opt3
 
