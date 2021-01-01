@@ -13,10 +13,11 @@ class SprintCommand(commands.Cog, CommandWrapper):
     DEFAULT_DELAY = 2 # 2 minutes
     MAX_LENGTH = 60 # 1 hour
     MAX_DELAY = 60 * 24 # 24 hours
+    WPM_CHECK = 150 # If WPM exceeds this amount, check that the user meant to submit that many words
 
     def __init__(self, bot):
         self.bot = bot
-        self._supported_commands = ['start', 'for', 'time', 'cancel', 'end', 'join', 'leave', 'wc', 'declare', 'pb', 'notify', 'forget', 'project', 'status']
+        self._supported_commands = ['start', 'for', 'time', 'cancel', 'end', 'join', 'leave', 'wc', 'declare', 'pb', 'notify', 'forget', 'project', 'status', 'in', 'purge']
         self._arguments = [
             {
                 'key': 'cmd',
@@ -83,6 +84,7 @@ class SprintCommand(commands.Cog, CommandWrapper):
         # Start a sprint
         if cmd == 'start':
             return await self.run_start(context)
+
         elif cmd == 'for':
 
             length = opt1
@@ -100,6 +102,27 @@ class SprintCommand(commands.Cog, CommandWrapper):
                 delay = 0
             elif opt2.lower() == 'in':
                 delay = opt3
+
+            return await self.run_start(context, length, delay)
+
+        elif cmd == "in":
+
+            delay = opt1
+
+            # If the second option is invalid, display an error message
+            if opt2 is not None and opt2.lower() != "for":
+                return await context.send(
+                    user.get_mention()
+                    + ", "
+                    + lib.get_string("sprint:err:in:unknown", user.get_guild())
+                )
+
+            # Get the length they want before starting the sprint.
+            # If they left off the last argument and just said `sprint for 20` then assume they mean now.
+            if opt2 is None:
+                length = self.DEFAULT_LENGTH
+            elif opt2.lower() == "for":
+               length = opt3
 
             return await self.run_start(context, length, delay)
 
@@ -135,6 +158,22 @@ class SprintCommand(commands.Cog, CommandWrapper):
 
         elif cmd == 'project':
             return await self.run_project(context, opt1)
+
+        elif cmd == 'purge':
+            return await self.run_purge(context)
+
+    async def run_purge(self, context):
+        """
+        Purge any users who asked for notifications but aren't on the server any more.
+        @param context:
+        @return:
+        """
+        user = User(context.message.author.id, context.guild.id, context)
+        purged = await Sprint.purge_notifications(context)
+        if purged > 0:
+            return await context.send(lib.get_string('sprint:purged', user.get_guild()).format(purged))
+        else:
+            return await context.send(lib.get_string('sprint:purged:none', user.get_guild()))
 
     async def run_project(self, context, shortname):
         """
@@ -254,9 +293,26 @@ class SprintCommand(commands.Cog, CommandWrapper):
 
         # Is the sprint finished? If so this will be an ending_wc declaration, not a current_wc one.
         col = 'ending' if sprint.is_finished() else 'current'
-        arg = {col: new_amount}
+
+        # Before we actually update it, if the WPM is huge and most likely an error, just check with them if they meant to put that many words.
+        written = new_amount - int(user_sprint['starting_wc'])
+        seconds = int(time.time()) - user_sprint['timejoined']
+        wpm = Sprint.calculate_wpm(written, seconds)
+
+        if wpm > self.WPM_CHECK:
+
+            # Make a fake prompt to wait for confirmation.
+            argument = {'prompt': lib.get_string('sprint:wpm:sure', user.get_guild()).format(written, wpm),
+                        'check': lambda resp: resp.lower() in ('y', 'yes', 'n', 'no')}
+
+            response = await self.adhoc_prompt(context, argument, True)
+
+            # If they confirm, then delete the event.
+            if response is False or response.content.lower() in ('n', 'no'):
+                return await context.send(user.get_mention() + ', ' + lib.get_string('sprint:declareagain', user.get_guild()))
 
         # Update the user's sprint record
+        arg = {col: new_amount}
         sprint.update_user(user.get_id(), **arg)
 
         # Reload the user sprint info

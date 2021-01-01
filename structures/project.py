@@ -1,4 +1,4 @@
-import lib
+import discord, lib, time
 from structures.db import Database
 
 class Project:
@@ -14,10 +14,18 @@ class Project:
             self._name = record['name']
             self._shortname = record['shortname']
             self._words = record['words']
+            self._status = record['status']
+            self._genre = record['genre']
+            self._description = record['description']
+            self._link = record['link']
+            self._image = record['image']
             self._completed = record['completed']
 
     def get_id(self):
         return self._id
+
+    def is_complete(self):
+        return self._completed > 0
 
     def get_user(self):
         return self._user
@@ -34,8 +42,66 @@ class Project:
     def get_words(self):
         return self._words
 
-    def is_completed(self):
-        return int(self._completed) == 1
+    def get_status(self):
+        return self._status
+
+    def get_genre(self):
+        return self._genre
+
+    def get_description(self):
+        return self._description
+
+    def get_link(self):
+        return self._link if self._link != '' else None
+
+    def get_image(self):
+        return self._image if self._image != '' else None
+
+    def get_status_emote(self):
+        """
+        Given the project's status, get the corresponding emote to display
+        @return:
+        """
+
+        emotes = [
+            {'status': 'planning', 'emote': ':thinking:'},
+            {'status': 'progress', 'emote': ':writing_hand:'},
+            {'status': 'editing', 'emote': ':pencil:'},
+            {'status': 'published', 'emote': ':notebook_with_decorative_cover:'},
+            {'status': 'finished', 'emote': ':white_check_mark:'},
+            {'status': 'abandoned', 'emote': ':wastebasket:'},
+        ]
+
+        for status in emotes:
+            if status['status'] == self._status:
+                return status['emote']
+        return ''
+
+    def get_genre_emote(self):
+        """
+        Given the project's genre, get the corresponding emote to display
+        @return:
+        """
+
+        emotes = [
+            {'genre': 'fantasy', 'emote': ':man_mage:'},
+            {'genre': 'scifi', 'emote': ':ringed_planet:'},
+            {'genre': 'romance', 'emote': ':heart:'},
+            {'genre': 'horror', 'emote': ':skull:'},
+            {'genre': 'fiction', 'emote': ':blue_book:'},
+            {'genre': 'nonfiction', 'emote': ':bookmark:'},
+            {'genre': 'short', 'emote': ':shorts:'},
+            {'genre': 'mystery', 'emote': ':detective:'},
+            {'genre': 'thriller', 'emote': ':scream:'},
+            {'genre': 'crime', 'emote': ':oncoming_police_car:'},
+            {'genre': 'erotic', 'emote': ':hot_pepper:'},
+            {'genre': 'comic', 'emote': ':art:'},
+        ]
+
+        for genre in emotes:
+            if genre['genre'] == self._genre:
+                return genre['emote']
+        return ''
 
     def delete(self):
         """
@@ -43,22 +109,6 @@ class Project:
         :return:
         """
         return self.__db.delete('projects', {'id': self._id})
-
-    def complete(self, value=1):
-        """
-        Mark the project as complete
-        :return:
-        """
-        self._completed = value
-        return self.__db.update('projects', {'completed': value}, {'id': self._id})
-
-    def uncomplete(self):
-        """
-        Mark a project as NOT completed
-        :return:
-        """
-        # We mark it as -1 instead of 0, so we don't award them XP for completing it again in the future.
-        return self.complete(-1)
 
     def add_words(self, amount):
         """
@@ -89,6 +139,55 @@ class Project:
         self._name = name
         return self.__db.update('projects', {'shortname': shortname, 'name': name}, {'id': self._id})
 
+    def set_image(self, img):
+        """
+        Set the project's image.
+        @param img:
+        @return:
+        """
+        return self.__db.update('projects', {'image': img}, {'id': self._id})
+
+
+    def set_status(self, status):
+        """
+        Set the project's status.
+        @param status:
+        @return:
+        """
+        params = {'status': status}
+
+        # If we are marking it as finished or published and it's not been marked as completed before, add xp.
+        if (status == 'finished' or status == 'published') and not self.is_complete():
+
+            # Mark the project as completed.
+            params['completed'] = int(time.time())
+
+        return self.__db.update('projects', params, {'id': self._id})
+
+    def set_link(self, link):
+        """
+        Set the project's link.
+        @param link:
+        @return:
+        """
+        return self.__db.update('projects', {'link': link}, {'id': self._id})
+
+    def set_genre(self, genre):
+        """
+        Set the project's genre.
+        @param genre:
+        @return:
+        """
+        return self.__db.update('projects', {'genre': genre}, {'id': self._id})
+
+    def set_description(self, description):
+        """
+        Set the project's description.
+        @param description:
+        @return:
+        """
+        return self.__db.update('projects', {'description': description}, {'id': self._id})
+
     def get(user, shortname):
         """
         Try to get a project with a given shortname, for a given user
@@ -100,14 +199,20 @@ class Project:
         record = db.get('projects', {'user': user, 'shortname': shortname})
         return Project(record['id']) if record else None
 
-    def all(user):
+    def all(user, filter_by = None, filter = None):
         """
-        Get an array of Projects for a given user
-        :param user:
-        :return:
+        Get an array of Projects for a given user, matching any optional filter passed through
+        @param filter_by:
+        @param filter:
+        @return:
         """
         db = Database.instance()
-        records = db.get_all('projects', {'user': user}, ['id'], ['completed', 'name', 'shortname', 'words'])
+
+        params = {'user': user}
+        if filter_by is not None and filter is not None:
+            params[filter_by] = filter
+
+        records = db.get_all('projects', params, ['id'], ['name', 'shortname', 'words'])
         projects = []
 
         for record in records:
@@ -123,3 +228,26 @@ class Project:
         """
         db = Database.instance()
         return db.insert('projects', {'user': user, 'shortname': shortname, 'name': name})
+
+    async def display(self, context):
+
+        title = self.get_title()
+        description = self.get_description()
+        link = self.get_link()
+        words = str("{:,}".format(self.get_words()))
+
+        embed = discord.Embed(title=title, color=discord.Color.green(), description=description, url=link)
+
+        print(self.get_image())
+
+        if self.get_image() is not None:
+            embed.set_thumbnail(url=self.get_image())
+
+        embed.add_field(name=lib.get_string('status', context.guild.id), value=self.get_status_emote() + ' ' + lib.get_string('project:status:'+self.get_status(), context.guild.id), inline=True)
+
+        if self.get_genre() is not None:
+            embed.add_field(name=lib.get_string('genre', context.guild.id), value=self.get_genre_emote() + ' ' + lib.get_string('project:genre:'+self.get_genre(), context.guild.id), inline=True)
+
+        embed.add_field(name=lib.get_string('wordcount', context.guild.id), value=words, inline=True)
+
+        return await context.send(embed=embed)
