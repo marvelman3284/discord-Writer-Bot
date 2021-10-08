@@ -111,6 +111,26 @@ def is_number(value):
     except (ValueError, TypeError):
         return False
 
+def is_valid_timezone(timezone):
+    """
+    Check if the timezone string is valid
+    @param timezone:
+    @return:
+    """
+    if not timezone:
+        return False
+
+    timezones = [x.lower() for x in pytz.all_timezones]
+    return timezone.lower() in timezones
+
+def get_timezone(timezone):
+    """
+    Return a pytz timezone from a string
+    @param timezone:
+    @return:
+    """
+    return pytz.timezone(timezone) if is_valid_timezone(timezone) else None
+
 def get_midnight_utc(timezone, type):
     """
     Given a timezone name, get the UTC timestamp for midnight at the next (day, week, month, year).
@@ -189,7 +209,7 @@ def secs_to_mins(seconds):
 
     return result
 
-def secs_to_days(seconds, format="{days} days, {hours} hours, {minutes} minutes, {seconds} seconds"):
+def secs_to_days(seconds, format="auto"):
     """
     Convert a number of seconds, into days, hours, minutes and seconds
     E.g. 65 seconds -> 0 days, 1 minute 5 seconds
@@ -201,6 +221,16 @@ def secs_to_days(seconds, format="{days} days, {hours} hours, {minutes} minutes,
     d = {"days": tdelta.days}
     d["hours"], rem = divmod(tdelta.seconds, 3600)
     d["minutes"], d["seconds"] = divmod(rem, 60)
+
+    # If we pass 'auto' through then only return the formats which are relevant.
+    if format == "auto":
+        format = ""
+        format += "{days} day(s), " if d['days'] > 0 else ""
+        format += "{hours} hour(s), " if d['hours'] > 0 else ""
+        format += "{minutes} min(s), " if d['minutes'] > 0 else ""
+        format += "{seconds} sec(s), " if d['seconds'] > 0 else ""
+        format = format.rsplit(', ', 1)[0]
+
     return format.format(**d)
 
 def is_valid_datetime(value, format):

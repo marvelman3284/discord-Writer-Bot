@@ -1,8 +1,10 @@
 import discord, lib, time
+from datetime import datetime
 from discord.ext import commands
 from structures.generator import NameGenerator
 from structures.project import Project
 from structures.sprint import Sprint
+from structures.guild import Guild
 from structures.task import Task
 from structures.user import User
 from structures.wrapper import CommandWrapper
@@ -73,6 +75,9 @@ class SprintCommand(commands.Cog, CommandWrapper):
         """
         user = User(context.message.author.id, context.guild.id, context)
 
+        if not Guild(context.guild).is_command_enabled('sprint'):
+            return await context.send(lib.get_string('err:disabled', context.guild.id))
+
         # Check the arguments are valid
         args = await self.check_arguments(context, cmd=cmd, opt1=opt1, opt2=opt2, opt3=opt3)
         if not args:
@@ -90,7 +95,7 @@ class SprintCommand(commands.Cog, CommandWrapper):
             length = opt1
 
             # If the second option is invalid, display an error message
-            if opt2 is not None and opt2.lower() not in ['now', 'in']:
+            if opt2 is not None and opt2.lower() not in ['now', 'in', 'at']:
                 return await context.send(user.get_mention() + ', ' + lib.get_string('sprint:err:for:unknown', user.get_guild()))
 
             # If they left off the last argument and just said `sprint for 20` then assume they mean now.
@@ -102,6 +107,22 @@ class SprintCommand(commands.Cog, CommandWrapper):
                 delay = 0
             elif opt2.lower() == 'in':
                 delay = opt3
+            elif opt2.lower() == 'at':
+
+                # Make sure the user has set their timezone, otherwise we can't calculate it.
+                timezone = user.get_setting('timezone')
+                user_timezone = lib.get_timezone(timezone)
+                if not user_timezone:
+                    return await context.send(user.get_mention() + ', ' + lib.get_string('err:notimezone', user.get_guild()))
+
+                # If they are doing `sprint for 20 at :15` for example, then opt3 must be set in the format '.00'.
+                start = int(opt3[1:]) if (isinstance(opt3, str) and opt3.startswith('.') and len(opt3) == 3) else opt3
+                if not isinstance(start, int) or start < 0 or start >= 60:
+                    return await context.send(user.get_mention() + ', ' + lib.get_string('sprint:err:for:at', user.get_guild()))
+
+                # Now using their timezone and the minute they requested, calculate when that should be.
+                user_timezone = lib.get_timezone(timezone)
+                delay = (60 + start - datetime.now(user_timezone).minute) % 60
 
             return await self.run_start(context, length, delay)
 
@@ -223,6 +244,9 @@ class SprintCommand(commands.Cog, CommandWrapper):
         if not sprint.has_started():
             return await context.send(user.get_mention() + ', ' + lib.get_string('sprint:err:notstarted', user.get_guild()))
 
+        # Change the end reference to now, otherwise wpm calculations will be off, as it will use the time in the future when it was supposed to end.
+        sprint.update_end_reference(int(time.time()))
+
         # Since we are forcing the end, we should cancel any pending tasks for this sprint
         Task.cancel('sprint', sprint.get_id())
 
@@ -296,10 +320,15 @@ class SprintCommand(commands.Cog, CommandWrapper):
 
         # Before we actually update it, if the WPM is huge and most likely an error, just check with them if they meant to put that many words.
         written = new_amount - int(user_sprint['starting_wc'])
-        seconds = int(time.time()) - user_sprint['timejoined']
+        seconds = int(sprint.get_end_reference()) - user_sprint['timejoined']
         wpm = Sprint.calculate_wpm(written, seconds)
 
-        if wpm > self.WPM_CHECK:
+        # Does the user have a configured setting for max wpm to check?
+        max_wpm = user.get_setting('maxwpm')
+        if not max_wpm:
+            max_wpm = self.WPM_CHECK
+
+        if wpm > int(max_wpm):
 
             # Make a fake prompt to wait for confirmation.
             argument = {'prompt': lib.get_string('sprint:wpm:sure', user.get_guild()).format(written, wpm),

@@ -3,12 +3,13 @@ from datetime import datetime, timezone
 from discord.ext import commands
 from structures.user import User
 from structures.wrapper import CommandWrapper
+from structures.guild import Guild
 
 class MySetting(commands.Cog, CommandWrapper):
 
     def __init__(self, bot):
         self.bot = bot
-        self._supported_settings = ['timezone']
+        self._supported_settings = ['timezone', 'maxwpm']
         self._arguments = [
             {
                 'key': 'setting',
@@ -37,6 +38,9 @@ class MySetting(commands.Cog, CommandWrapper):
             !mysetting timezone Europe/London
             !mysetting timezone America/Phoenix
         """
+        if not Guild(context.guild).is_command_enabled('mysetting'):
+            return await context.send(lib.get_string('err:disabled', context.guild.id))
+
         user = User(context.message.author.id, context.guild.id, context)
 
         # If we want to list the setting, do that instead.
@@ -47,7 +51,7 @@ class MySetting(commands.Cog, CommandWrapper):
                 for setting, value in settings.items():
                     output += setting + '=' + str(value) + '\n'
             else:
-                output += lib.get_string('setting:none', guild.get_id())
+                output += lib.get_string('setting:none', user.get_guild())
             output += '```'
             return await context.send(user.get_mention() + ',\n' + output)
 
@@ -69,6 +73,12 @@ class MySetting(commands.Cog, CommandWrapper):
             except pytz.exceptions.UnknownTimeZoneError:
                 await context.send(lib.get_string('mysetting:timezone:help', user.get_guild()))
                 return
+
+        elif setting == 'maxwpm':
+            # Must be a number.
+            value = lib.is_number(value)
+            if not value or value <= 0:
+                return await context.send(user.get_mention() + ', ' + lib.get_string('mysetting:err:maxwpm', user.get_guild()))
 
         # Update the setting and post the success message
         user.update_setting(setting, value)

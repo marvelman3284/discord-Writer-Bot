@@ -41,6 +41,7 @@ class Help(commands.Cog, CommandWrapper):
             help_embed.add_field(name='`quote`', value=lib.get_string('help:quote', user.get_guild()), inline=True)
             help_embed.add_field(name='`reassure`', value=lib.get_string('help:reassure', user.get_guild()), inline=True)
             help_embed.add_field(name='`reset`', value=lib.get_string('help:reset', user.get_guild()), inline=True)
+            help_embed.add_field(name='`remind`', value=lib.get_string('help:remind', user.get_guild()), inline=True)
             help_embed.add_field(name='`roll`', value=lib.get_string('help:roll', user.get_guild()), inline=True)
             help_embed.add_field(name='`sprint`', value=lib.get_string('help:sprint', user.get_guild()), inline=True)
             help_embed.add_field(name='`wrote`', value=lib.get_string('help:wrote', user.get_guild()), inline=True)
@@ -127,6 +128,7 @@ class Help(commands.Cog, CommandWrapper):
             gen_embed.add_field(name='`generate idea`', value=lib.get_string('help:generateIdeaSub', user.get_guild()), inline=True)
             gen_embed.add_field(name='`generate prompt`', value=lib.get_string('help:generatePromptSub', user.get_guild()), inline=True)
             gen_embed.add_field(name='`generate place 20`', value=lib.get_string('help:generatePlace20Sub', user.get_guild()), inline=True)
+            gen_embed.add_field(name='`generate face`', value=lib.get_string('help:generateFace', user.get_guild()), inline=True)
             gen_embed.set_footer(text=lib.get_string('help:generateFooter', user.get_guild()))
 
             return await context.send(embed=gen_embed)
@@ -213,6 +215,7 @@ class Help(commands.Cog, CommandWrapper):
             sprint_embed=discord.Embed(title='Help with `sprint` Command.', color=3897943)
             sprint_embed.add_field(name='`sprint start`', value=lib.get_string('help:sprintStartSub', user.get_guild()), inline=True)
             sprint_embed.add_field(name='`sprint for 20 in 3`', value=lib.get_string('help:sprint20in3Sub', user.get_guild()), inline=True)
+            sprint_embed.add_field(name='`sprint for 20 at .30`', value=lib.get_string('help:sprintForAt', user.get_guild()), inline=True)
             sprint_embed.add_field(name='`sprint cancel`', value=lib.get_string('help:sprintCancelSub', user.get_guild()), inline=False)
             sprint_embed.add_field(name='`sprint join`', value=lib.get_string('help:sprintJoinSub', user.get_guild()), inline=True)
             sprint_embed.add_field(name='`sprint join 100`', value=lib.get_string('help:sprintJoin100Sub', user.get_guild()), inline=True)
@@ -243,6 +246,17 @@ class Help(commands.Cog, CommandWrapper):
             xp_embed.add_field(name='`xp`', value=lib.get_string('help:xpSub', user.get_guild()), inline=True)
             xp_embed.add_field(name='`xp top`', value=lib.get_string('help:xpTopSub', user.get_guild()), inline=True)
             
+            return await context.send(embed=xp_embed)
+
+        elif command == 'remind':
+            xp_embed = discord.Embed(title='Help with `remind` command.', color=3897943)
+            xp_embed.add_field(name='`remind list`', value=lib.get_string('help:remind:list', user.get_guild()), inline=True)
+            xp_embed.add_field(name='`remind delete`', value=lib.get_string('help:remind:delete', user.get_guild()), inline=True)
+            xp_embed.add_field(name='`remind in 5 send hello everyone to #channel-name`', value=lib.get_string('help:remind:set:in', user.get_guild()), inline=True)
+            xp_embed.add_field(name='`remind at 12:00 send hello everyone to #channel-name`', value=lib.get_string('help:remind:set:at', user.get_guild()), inline=True)
+            xp_embed.add_field(name='`remind every hour from 16:05 send hello everyone to #channel-name`', value=lib.get_string('help:remind:set:every:hour', user.get_guild()), inline=True)
+            xp_embed.add_field(name='`remind every day at 16:05 send hello everyone to #channel-name`', value=lib.get_string('help:remind:set:every:day', user.get_guild()), inline=True)
+            xp_embed.add_field(name='`remind every week at 16:05 send hello everyone to #channel-name`', value=lib.get_string('help:remind:set:every:week', user.get_guild()), inline=True)
             return await context.send(embed=xp_embed)
 
 

@@ -3,6 +3,7 @@ from discord.ext import commands
 from structures.user import User
 from structures.wrapper import CommandWrapper
 from validator_collection import checkers
+from structures.guild import Guild
 
 class Project(commands.Cog, CommandWrapper):
 
@@ -10,7 +11,7 @@ class Project(commands.Cog, CommandWrapper):
         self.bot = bot
         self._supported_commands = ['create', 'delete', 'rename', 'update', 'view', 'list', 'status', 'genre', 'description', 'link', 'image', 'img']
         self._statuses = ['planning', 'progress', 'editing', 'published', 'finished', 'abandoned']
-        self._genres = ['fantasy', 'scifi', 'romance', 'horror', 'fiction', 'nonfiction', 'short', 'mystery', 'thriller', 'crime', 'erotic', 'comic']
+        self._genres = ['fantasy', 'scifi', 'romance', 'horror', 'fiction', 'nonfiction', 'short', 'mystery', 'thriller', 'crime', 'erotic', 'comic', 'action', 'drama', 'fanfic', 'sfw', 'nsfw', 'seminsfw', 'literary', 'adventure', 'suspense', 'ya', 'kids']
         self._arguments = [
             {
                 'key': 'cmd',
@@ -42,6 +43,9 @@ class Project(commands.Cog, CommandWrapper):
             `project link sword http://website.com/your-book` - Sets the hyperlink for your project's web/store page.
             `project img sword http://website.com/picture.png` - Sets the thumbnail picture to use for this project.
         """
+        if not Guild(context.guild).is_command_enabled('project'):
+            return await context.send(lib.get_string('err:disabled', context.guild.id))
+
         user = User(context.message.author.id, context.guild.id, context)
 
         # Check the arguments were all supplied and get a dict list of them and their values, after any prompts
@@ -250,8 +254,8 @@ class Project(commands.Cog, CommandWrapper):
 
         filter_string = lib.get_string('project:'+by+':'+filter, user.get_guild()) if filter is not None else lib.get_string('all', user.get_guild())
 
-        # Project lists can get very long. If it is over 2000 characters, we need to split it.
-        if len(message) >= 2000:
+        # Project lists can get very long. If it is over 2000 characters, we need to split it. Using 1750 to give us leeway on the user mention as well.
+        if len(message) >= 1750:
             return await self.split_send(context, user, lib.get_string('project:list', user.get_guild()).format(filter_string) + message)
         else:
             return await context.send(user.get_mention() + ', ' + lib.get_string('project:list', user.get_guild()).format(filter_string) + message)
